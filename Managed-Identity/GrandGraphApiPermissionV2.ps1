@@ -59,3 +59,24 @@ foreach ($p in $permissions) {
 # Disconnect from Microsoft Graph.
 Disconnect-MgGraph
 
+
+
+$requiredPermissions = @(
+    "User.Read.All",
+    "SecurityIncident.Read.All",
+    "SecurityEvents.Read.All", 
+    "SecurityAlert.Read.All",
+    "SecurityActions.Read.All",
+    "GroupMember.ReadWrite.All", 
+    "Group.ReadWrite.All",
+    "DeviceManagementServiceConfig.Read.All",
+    "DeviceManagementRBAC.Read.All", 
+    "DeviceManagementManagedDevices.Read.All",
+    "DeviceManagementConfiguration.Read.All", 
+    "DeviceManagementApps.ReadWrite.All",
+    "DeviceManagementApps.Read.All",
+    "Device.Read.All", 
+    "APIConnectors.ReadWrite.All",
+    "CloudPC.Read.All",
+    "Application.Read.All"
+)
