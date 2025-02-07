@@ -40,7 +40,7 @@
 
 
 # Connect to Microsoft Graph.
-Connect-MgGraph -Scopes "Application.ReadWrite.All", "Directory.ReadWrite.All", "RoleManagement.ReadWrite.Directory, AppRoleAssignment.ReadWrite.All"
+Connect-MgGraph -Scopes "Group.ReadWrite.All", "Directory.ReadWrite.All", "DeviceManagementManagedDevices.Read.All"
 
 # Get the service principal for Microsoft Graph.
 $GraphServicePrincipal = Get-MgServicePrincipal -Filter "appId eq '00000003-0000-0000-c000-000000000000'"
