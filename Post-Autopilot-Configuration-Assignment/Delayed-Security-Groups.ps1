@@ -24,9 +24,14 @@
          - If a device qualifies, it is synchronized with the corresponding “Delayed” group.
          - The script ensures that a delayed group exists (named by appending "-Delayed" to the source group’s display name); if not, it creates one.
          - It then adds qualifying devices to the delayed group if they are not already members and removes any devices from the delayed group that are no longer in the source group.
+         - **Note:** Even if a source group has no members, the corresponding delayed group is still created (or verified).
 
     6. **Logging and Reporting:**  
        All actions, changes, and errors are logged to a local file. At the end of the runbook, the log file is uploaded to an Azure Blob Storage container for record-keeping.
+
+.VERSION
+    1.0.0 Initial Release
+    1.1.0 The script ensures that a delayed group exists (named by appending "-Delayed" to the source group’s display name); if not, it creates one **Note:** Even if a source group has no members, the corresponding delayed group is still created (or verified).
 
 .NOTES
     - **Prerequisites:**  
@@ -50,7 +55,8 @@
     Maxime Guillemin
 
 .DATE
-    07/02/2025
+    07/02/2025  ->  1.0.0
+    12/02/2025  ->  1.1.0
 #>
 
 # =====================================================
@@ -232,11 +238,13 @@ foreach ($sourceGroup in $sourceGroups) {
     $sourceMembersUrl = "https://graph.microsoft.com/v1.0/groups/$($sourceGroup.id)/members?`$select=id,displayName,deviceId"
     $sourceMembers = Get-AllGraphData -Uri $sourceMembersUrl
 
-    if (-not $sourceMembers -or $sourceMembers.Count -eq 0) {
-        Write-Log "No members found in group '$($sourceGroup.displayName)'; skipping." "WARNING"
-        continue
+    if (-not $sourceMembers) { $sourceMembers = @() }
+    if ($sourceMembers.Count -eq 0) {
+        Write-Log "No members found in group '$($sourceGroup.displayName)'." "WARNING"
     }
-    Write-Log "Group '$($sourceGroup.displayName)' contains $($sourceMembers.Count) member(s)."
+    else {
+        Write-Log "Group '$($sourceGroup.displayName)' contains $($sourceMembers.Count) member(s)."
+    }
 
     # -------------------------------------------------
     # Determine qualifying devices (enrolled for >= 8 hours).
