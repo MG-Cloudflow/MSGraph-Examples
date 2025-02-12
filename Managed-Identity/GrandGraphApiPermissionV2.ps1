@@ -31,7 +31,7 @@
 
 # Define your parameters.
 
-    $principalId = "e9ec857f-acd7-4b2a-9827-e9f40df212d7"
+    $principalId = ""
     $permissions = @(
         "GroupMember.ReadWrite.All", 
         "Directory.ReadWrite.All",
