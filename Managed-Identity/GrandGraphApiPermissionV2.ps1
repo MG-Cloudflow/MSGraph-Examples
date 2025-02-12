@@ -31,16 +31,16 @@
 
 # Define your parameters.
 
-    $principalId = "74d5733a-aa9b-4171-aff9-972412964dd5"
+    $principalId = "e9ec857f-acd7-4b2a-9827-e9f40df212d7"
     $permissions = @(
-        "Group.Read.All",
-        "User.Read.All",
-        "GroupMember.Read.All"
+        "GroupMember.ReadWrite.All", 
+        "Directory.ReadWrite.All",
+        "DeviceManagementManagedDevices.Read.All"
   )
 
 
 # Connect to Microsoft Graph.
-Connect-MgGraph -Scopes "Group.ReadWrite.All", "Directory.ReadWrite.All", "DeviceManagementManagedDevices.Read.All"
+Connect-MgGraph -Scopes "Application.ReadWrite.All", "Directory.ReadWrite.All", "RoleManagement.ReadWrite.Directory, AppRoleAssignment.ReadWrite.All"
 
 # Get the service principal for Microsoft Graph.
 $GraphServicePrincipal = Get-MgServicePrincipal -Filter "appId eq '00000003-0000-0000-c000-000000000000'"
@@ -58,25 +58,3 @@ foreach ($p in $permissions) {
 
 # Disconnect from Microsoft Graph.
 Disconnect-MgGraph
-
-
-
-$requiredPermissions = @(
-    "User.Read.All",
-    "SecurityIncident.Read.All",
-    "SecurityEvents.Read.All", 
-    "SecurityAlert.Read.All",
-    "SecurityActions.Read.All",
-    "GroupMember.ReadWrite.All", 
-    "Group.ReadWrite.All",
-    "DeviceManagementServiceConfig.Read.All",
-    "DeviceManagementRBAC.Read.All", 
-    "DeviceManagementManagedDevices.Read.All",
-    "DeviceManagementConfiguration.Read.All", 
-    "DeviceManagementApps.ReadWrite.All",
-    "DeviceManagementApps.Read.All",
-    "Device.Read.All", 
-    "APIConnectors.ReadWrite.All",
-    "CloudPC.Read.All",
-    "Application.Read.All"
-)
