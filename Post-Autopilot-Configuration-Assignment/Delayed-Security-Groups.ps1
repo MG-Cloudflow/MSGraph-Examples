@@ -32,7 +32,7 @@
 .VERSION
     1.0.0 Initial Release
     1.1.0 The script ensures that a delayed group exists (named by appending "-Delayed" to the source group’s display name); if not, it creates one **Note:** Even if a source group has no members, the corresponding delayed group is still created (or verified).
-    1.2.0 Device that have already been enrolled will be removed from the delayed group if they are not in the source group anymore or if they have been enrolled for less than 8 hours.
+    1.2.0 Device that have already been enrolled will be removed from the delayed group if they are not in the source group anymore or if they have been enrolled for less than 8 hours or if the device does not exist in intune anymore.
 
 .NOTES
     - **Prerequisites:**  
@@ -357,6 +357,7 @@ foreach ($sourceGroup in $sourceGroups) {
         if ($delayedMember.deviceId) {
             $removeDueToNotInSource = -not ($sourceDeviceIds -contains $delayedMember.deviceId)
             $removeDueToEnrollment = $false
+            $removeDueToMissingInIntune = $false
 
             # Edge case: Remove if not enrolled for 8 hours yet
             if ($deviceLookup.ContainsKey($delayedMember.deviceId)) {
@@ -373,8 +374,13 @@ foreach ($sourceGroup in $sourceGroups) {
                     Write-Log "Error checking enrollment time for delayed group member with DeviceId '$($delayedMember.deviceId)': $_" "ERROR"
                 }
             }
+            else {
+                # Device is not present in Intune anymore, remove from delayed group
+                $removeDueToMissingInIntune = $true
+                Write-Log "Device with DeviceId '$($delayedMember.deviceId)' is no longer present in Intune; removing from delayed group '$($delayedGroup.displayName)'." "CHANGE"
+            }
 
-            if ($removeDueToNotInSource -or $removeDueToEnrollment) {
+            if ($removeDueToNotInSource -or $removeDueToEnrollment -or $removeDueToMissingInIntune) {
                 Write-Log "Removing device with DeviceId '$($delayedMember.deviceId)' from delayed group '$($delayedGroup.displayName)' for source group '$($sourceGroup.displayName)'." "CHANGE"
                 $removeMemberUrl = "https://graph.microsoft.com/v1.0/groups/$($delayedGroup.id)/members/$($delayedMember.id)/`$ref"
                 try {
