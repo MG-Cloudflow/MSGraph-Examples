@@ -32,6 +32,7 @@
 .VERSION
     1.0.0 Initial Release
     1.1.0 The script ensures that a delayed group exists (named by appending "-Delayed" to the source group’s display name); if not, it creates one **Note:** Even if a source group has no members, the corresponding delayed group is still created (or verified).
+    1.2.0 Device that have already been enrolled will be removed from the delayed group if they are not in the source group anymore or if they have been enrolled for less than 8 hours.
 
 .NOTES
     - **Prerequisites:**  
@@ -353,8 +354,27 @@ foreach ($sourceGroup in $sourceGroups) {
     $sourceDeviceIds = $sourceMembers | Where-Object { $_.deviceId } | ForEach-Object { $_.deviceId }
     foreach ($delayedMember in $delayedMembers) {
         if ($delayedMember.deviceId) {
-            if (-not ($sourceDeviceIds -contains $delayedMember.deviceId)) {
-                Write-Log "Removing device with DeviceId '$($delayedMember.deviceId)' from delayed group '$($delayedGroup.displayName)' for source group '$($sourceGroup.displayName)' (no longer in source group)." "CHANGE"
+            $removeDueToNotInSource = -not ($sourceDeviceIds -contains $delayedMember.deviceId)
+            $removeDueToEnrollment = $false
+
+            # Edge case: Remove if not enrolled for 8 hours yet
+            if ($deviceLookup.ContainsKey($delayedMember.deviceId)) {
+                $managedDevice = $deviceLookup[$delayedMember.deviceId]
+                try {
+                    $enrollmentTime = [datetime]$managedDevice.enrolledDateTime
+                    $hoursSinceEnrollment = ([datetime]::UtcNow - $enrollmentTime).TotalHours
+                    if ($hoursSinceEnrollment -lt 8) {
+                        $removeDueToEnrollment = $true
+                        Write-Log "Device with DeviceId '$($delayedMember.deviceId)' in delayed group '$($delayedGroup.displayName)' has only been enrolled for $([math]::Round($hoursSinceEnrollment,2)) hours; removing from delayed group." "CHANGE"
+                    }
+                }
+                catch {
+                    Write-Log "Error checking enrollment time for delayed group member with DeviceId '$($delayedMember.deviceId)': $_" "ERROR"
+                }
+            }
+
+            if ($removeDueToNotInSource -or $removeDueToEnrollment) {
+                Write-Log "Removing device with DeviceId '$($delayedMember.deviceId)' from delayed group '$($delayedGroup.displayName)' for source group '$($sourceGroup.displayName)'." "CHANGE"
                 $removeMemberUrl = "https://graph.microsoft.com/v1.0/groups/$($delayedGroup.id)/members/$($delayedMember.id)/`$ref"
                 try {
                     Invoke-MgGraphRequest -Method DELETE -Uri $removeMemberUrl

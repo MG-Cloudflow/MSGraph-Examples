@@ -31,9 +31,8 @@
 
 # Define your parameters.
 
-    $principalId = ""
-    $permissions = @(
-        "GroupMember.ReadWrite.All", 
+    $principalId = "c660e2c1-47a9-4d11-94e9-f90537cfc536" # Replace with your managed identity service principal ID.
+    $permissions = @( 
         "Directory.ReadWrite.All",
         "DeviceManagementManagedDevices.Read.All"
   )

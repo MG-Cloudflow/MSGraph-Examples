@@ -106,6 +106,7 @@ Below is the full-featured README file in Markdown format:
    - Identifies devices enrolled for 8 or more hours.
    - Checks for or creates a corresponding "Delayed" group.
    - Synchronizes the "Delayed" group by adding qualifying devices that are missing and removing devices that are no longer in the source group.
+   - **Edge Case:** If a device is present in the "Delayed" group but has not yet been enrolled for 8 hours, the script will remove that device from the "Delayed" group, even if it is still a member of the source group. This ensures that only devices meeting the minimum enrollment duration remain in the "Delayed" group.
 
 4. **Logging and Reporting:**  
    All actions, changes, and errors are logged to a local log file, which is then uploaded to an Azure Blob Storage container upon completion.
